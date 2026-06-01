@@ -32,26 +32,23 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var _counter = 0.0;
- var myFontSize = 30.0;
 
-  TextStyle _myFontStyle = const TextStyle (
-    fontSize: 30,
-    color: Colors.blue,
-  );
-  void _incrementCounter() {
+  final TextEditingController loginController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  String imageSource = "image/question-mark.png";
+// here we use void cuz the function doesn't return a value
+  void login() {
+    // this line mean the string will strore text and gets the value from Password TextField
+    String password = passwordController.text;
+    print(password);
+// setState to refresh the screen
     setState(() {
-
-      if (_counter <=99.0) {
-        _counter++;
+      if (password == "ASDF") {
+        imageSource = "image/idea.png";
+      } else {
+        imageSource = "image/stop.png";
       }
-    });
-  }
-
-  void _setNewValue (double newValue){
-    setState((){
-      myFontSize = newValue;
-      _myFontStyle = TextStyle(fontSize: myFontSize, color: Colors.blue );
     });
   }
 
@@ -60,34 +57,65 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       appBar: AppBar(
-
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-
         title: Text(widget.title),
       ),
+
       body: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
 
-        child: Column(
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: TextField(
+                  controller: loginController,
+                  decoration: const InputDecoration(
+                    labelText: "Login Name",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
 
-          mainAxisAlignment: .center,
-          children: [
-             Text('You have pushed the button this many times:', style: _myFontStyle),
-            Text(
-              '$_counter',
-              style: _myFontStyle,
-            ),
-            const SizedBox (height : 24),
-            Slider (min :10.0, max: 100.0,divisions: 50 , label: myFontSize.toStringAsFixed(1) ,value: myFontSize, onChanged: _setNewValue ),
+              Padding(
+                // 10 mean add 10 px all = top , bottom, left, right (LTBR)
+                padding: const EdgeInsets.all(10),
+                child: TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  //InputDecoration makes textfeild perttier
+                  decoration: const InputDecoration(
+                    labelText: "Password",
+                    // Draw a border (outline) around the TextField.
+                    //OutlineInputBorder means draws the box around the field.
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
 
+              Padding(
+                padding: const EdgeInsets.all(10),
+                //Elevatedbutton to crate a button
+                //child mean widget inside another widget like here the padding is the parent widget
+                child: ElevatedButton(
 
-          ],
+                  onPressed: login,
+                  child: const Text("Login"),
+                ),
+              ),
+
+              Semantics(
+                label: "Login result image",
+                //Image.asset =  load image from project folder
+                child: Image.asset(
+                  imageSource,
+                  width: 300,
+                  height: 300,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }
