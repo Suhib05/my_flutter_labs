@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -7,16 +8,19 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
+      title: 'Week 4 Lab',
       theme: ThemeData(
-
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+        ),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(
+        title: 'Week 4 Lab',
+      ),
     );
   }
 }
@@ -24,92 +28,316 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
-
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MyHomePage> createState() =>
+      _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState
+    extends State<MyHomePage> {
 
-  final TextEditingController loginController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController
+  loginController =
+  TextEditingController();
 
-  String imageSource = "image/question-mark.png";
-// here we use void cuz the function doesn't return a value
+  final TextEditingController
+  passwordController =
+  TextEditingController();
+
+  final EncryptedSharedPreferences
+  prefs =
+  EncryptedSharedPreferences();
+
+  String imageSource =
+      "image/question-mark.png";
+
+  @override
+  void initState() {
+    super.initState();
+    loadSavedData();
+  }
+
+  Future<void> loadSavedData() async {
+
+    String? username =
+    await prefs.getString(
+        "username");
+
+    String? password =
+    await prefs.getString(
+        "password");
+
+    if (username != null &&
+        password != null) {
+
+      loginController.text =
+          username;
+
+      passwordController.text =
+          password;
+
+      Future.delayed(
+        Duration.zero,
+            () {
+
+          ScaffoldMessenger.of(context)
+              .showSnackBar(
+            const SnackBar(
+              content: Text(
+                "Previous login loaded",
+              ),
+            ),
+          );
+        },
+      );
+    }
+  }
+
+  Future<void> saveLogin() async {
+
+    await prefs.setString(
+      "username",
+      loginController.text,
+    );
+
+    await prefs.setString(
+      "password",
+      passwordController.text,
+    );
+  }
+
+  Future<void> clearLogin() async {
+
+    await prefs.remove(
+        "username");
+
+    await prefs.remove(
+        "password");
+  }
+
   void login() {
-    // this line mean the string will strore text and gets the value from Password TextField
-    String password = passwordController.text;
-    print(password);
-// setState to refresh the screen
-    setState(() {
-      if (password == "ASDF") {
+
+    String password =
+        passwordController.text;
+
+    if(password == "ASDF") {
+
+      setState(() {
         imageSource = "image/idea.png";
-      } else {
+      });
+
+      showSaveDialog();
+
+    } else {
+
+      setState(() {
         imageSource = "image/stop.png";
-      }
-    });
+      });
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Invalid password",
+          ),
+        ),
+      );
+    }
+  }
+
+  void showSaveDialog() {
+
+    String username = loginController.text.trim();
+    String password = passwordController.text.trim();
+
+    String message = "";
+
+    if (username.isNotEmpty && password.isNotEmpty) {
+      message =
+      "Would you like to save your username and password for next time?";
+    }
+    else if (username.isNotEmpty) {
+      message =
+      "Would you like to save your username for next time?";
+    }
+    else if (password.isNotEmpty) {
+      message =
+      "Would you like to save your password for next time?";
+    }
+    else {
+      message =
+      "Nothing to save.";
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+
+        return AlertDialog(
+
+          title: const Text(
+            "Save Login?",
+          ),
+
+          content: Text(message),
+
+          actions: [
+
+            TextButton(
+
+              onPressed: () async {
+
+                await saveLogin();
+
+                Navigator.pop(context);
+
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      "Information saved",
+                    ),
+                  ),
+                );
+              },
+
+              child: const Text("Yes"),
+            ),
+
+            TextButton(
+
+              onPressed: () async {
+
+                await clearLogin();
+
+                loginController.clear();
+                passwordController.clear();
+
+                Navigator.pop(context);
+
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      "Saved information removed",
+                    ),
+                  ),
+                );
+              },
+
+              child: const Text("No"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+      BuildContext context) {
 
     return Scaffold(
+
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        backgroundColor:
+        Theme.of(context)
+            .colorScheme
+            .inversePrimary,
+
+        title:
+        Text(widget.title),
       ),
 
       body: Center(
-        child: SingleChildScrollView(
+
+        child:
+        SingleChildScrollView(
+
           child: Column(
+
             children: [
 
               Padding(
-                padding: const EdgeInsets.all(10),
+
+                padding:
+                const EdgeInsets.all(
+                    10),
+
                 child: TextField(
-                  controller: loginController,
-                  decoration: const InputDecoration(
-                    labelText: "Login Name",
-                    border: OutlineInputBorder(),
+
+                  controller:
+                  loginController,
+
+                  decoration:
+                  const InputDecoration(
+
+                    labelText:
+                    "Login Name",
+
+                    border:
+                    OutlineInputBorder(),
                   ),
                 ),
               ),
 
               Padding(
-                // 10 mean add 10 px all = top , bottom, left, right (LTBR)
-                padding: const EdgeInsets.all(10),
+
+                padding:
+                const EdgeInsets.all(
+                    10),
+
                 child: TextField(
-                  controller: passwordController,
+
+                  controller:
+                  passwordController,
+
                   obscureText: true,
-                  //InputDecoration makes textfeild perttier
-                  decoration: const InputDecoration(
-                    labelText: "Password",
-                    // Draw a border (outline) around the TextField.
-                    //OutlineInputBorder means draws the box around the field.
-                    border: OutlineInputBorder(),
+
+                  decoration:
+                  const InputDecoration(
+
+                    labelText:
+                    "Password",
+
+                    border:
+                    OutlineInputBorder(),
                   ),
                 ),
               ),
 
               Padding(
-                padding: const EdgeInsets.all(10),
-                //Elevatedbutton to crate a button
-                //child mean widget inside another widget like here the padding is the parent widget
-                child: ElevatedButton(
+
+                padding:
+                const EdgeInsets.all(
+                    10),
+
+                child:
+                ElevatedButton(
 
                   onPressed: login,
-                  child: const Text("Login"),
+
+                  child:
+                  const Text(
+                    "Login",
+                  ),
                 ),
               ),
 
               Semantics(
-                label: "Login result image",
-                //Image.asset =  load image from project folder
-                child: Image.asset(
+
+                label:
+                "Login result image",
+
+                child:
+                Image.asset(
+
                   imageSource,
+
                   width: 300,
+
                   height: 300,
                 ),
               ),
