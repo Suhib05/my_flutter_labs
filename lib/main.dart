@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import 'repository.dart';
 import 'login_page.dart';
+import 'shopping_list_page.dart';
 
 
 void main() async {
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
           seedColor: Colors.deepPurple,
         ),
       ),
-      home: LoginPage(repository),
+      home: const ShoppingListPage(),
     );
   }
 }
